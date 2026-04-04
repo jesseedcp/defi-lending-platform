@@ -8,11 +8,8 @@ import "../src/mocks/MockV3Aggregator.sol";
 
 contract DeployLendingPool is Script {
     function run() external {
-        // 读取你在命令行输入的私钥
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-
-        // 开始录制上链交易
-        vm.startBroadcast(deployerPrivateKey);
+        // 修改了这里：自动读取终端命令里的 private-key
+        vm.startBroadcast();
 
         // 1. 部署核心借贷池
         LendingPool pool = new LendingPool();
@@ -34,7 +31,7 @@ contract DeployLendingPool is Script {
         // 结束交易录制
         vm.stopBroadcast();
 
-        // 在终端打印出部署好的合约地址，方便你前端调用
+        // 打印地址
         console.log("=== Deployment Successful! ===");
         console.log("LendingPool Address:", address(pool));
         console.log("USDC Address:", address(usdc));
