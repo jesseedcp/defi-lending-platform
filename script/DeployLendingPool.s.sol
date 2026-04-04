@@ -1,20 +1,44 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {LendingPool} from "../src/LendingPool.sol";
+import "forge-std/Script.sol";
+import "../src/LendingPool.sol";
+import "../src/mocks/MockERC20.sol";
+import "../src/mocks/MockV3Aggregator.sol";
 
-interface Vm {
-    function startBroadcast() external;
-    function stopBroadcast() external;
-}
+contract DeployLendingPool is Script {
+    function run() external {
+        // 读取你在命令行输入的私钥
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
 
-contract DeployLendingPool {
-    address internal constant HEVM_ADDRESS = address(uint160(uint256(keccak256("hevm cheat code"))));
-    Vm internal constant vm = Vm(HEVM_ADDRESS);
+        // 开始录制上链交易
+        vm.startBroadcast(deployerPrivateKey);
 
-    function run() external returns (LendingPool pool) {
-        vm.startBroadcast();
-        pool = new LendingPool();
+        // 1. 部署核心借贷池
+        LendingPool pool = new LendingPool();
+
+        // 2. 部署用于测试的假代币 (USDC, WETH, GOV)
+        MockERC20 usdc = new MockERC20("USD Coin", "USDC", 18);
+        MockERC20 weth = new MockERC20("Wrapped Ether", "WETH", 18);
+        MockERC20 govToken = new MockERC20("Governance Token", "GOV", 18);
+
+        // 3. 部署模拟预言机并设置初始价格
+        MockV3Aggregator usdcOracle = new MockV3Aggregator(1e8);       // USDC = $1
+        MockV3Aggregator wethOracle = new MockV3Aggregator(2000e8);    // WETH = $2000
+
+        // 4. 初始化配置 (设置奖励代币、上线市场)
+        pool.setRewardToken(address(govToken));
+        pool.listMarket(address(usdc), address(usdcOracle), 9_000, 9_500, 1e12, 4e12, 8_000, 20e12);
+        pool.listMarket(address(weth), address(wethOracle), 7_500, 8_000, 1e12, 4e12, 8_000, 20e12);
+
+        // 结束交易录制
         vm.stopBroadcast();
+
+        // 在终端打印出部署好的合约地址，方便你前端调用
+        console.log("=== Deployment Successful! ===");
+        console.log("LendingPool Address:", address(pool));
+        console.log("USDC Address:", address(usdc));
+        console.log("WETH Address:", address(weth));
+        console.log("GOV Token Address:", address(govToken));
     }
 }
