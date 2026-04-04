@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - DeFi Lending Protocol</title>
+    <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="logo">🏦 DeFi Dashboard</h1>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="dashboard.html" class="nav-link active">Dashboard</a>
+                <a href="deposit.html" class="nav-link">Deposit</a>
+                <a href="borrow.html" class="nav-link">Borrow</a>
+            </nav>
+            <div class="wallet-display">
+                <span id="headerWalletAddress" class="wallet-address-short">Not Connected</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Risk Status Banner -->
+            <div id="riskBanner" class="risk-banner risk-safe">
+                <span id="riskIcon" class="risk-icon">✅</span>
+                <span id="riskText" class="risk-text">Your position is safe</span>
+            </div>
+
+            <!-- Core Metrics Cards -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Total Collateral</div>
+                    <div class="metric-value" id="totalCollateral">$0.00</div>
+                    <div class="metric-sub">Combined value of all collateral</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-label">Total Debt</div>
+                    <div class="metric-value" id="totalDebt">$0.00</div>
+                    <div class="metric-sub">Total borrowed amount</div>
+                </div>
+                
+                <div class="metric-card highlight">
+                    <div class="metric-label">Health Factor (HF)</div>
+                    <div class="metric-value" id="healthFactor">--</div>
+                    <div class="metric-sub" id="hfDescription">HF ≥ 1 is safe</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-label">LTV (Loan-to-Value)</div>
+                    <div class="metric-value" id="ltvRatio">--%</div>
+                    <div class="metric-sub">Debt / Collateral ratio</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-label">Borrow Capacity</div>
+                    <div class="metric-value" id="borrowCapacity">$0.00</div>
+                    <div class="metric-sub">Available to borrow</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-label">Liquidation Threshold</div>
+                    <div class="metric-value" id="liquidationThreshold">75%</div>
+                    <div class="metric-sub">Position liquidated if HF < 1</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <button onclick="window.location.href='deposit.html'" class="btn-primary">
+                    💰 Go to Deposit
+                </button>
+                <button onclick="window.location.href='borrow.html'" class="btn-secondary">
+                    🏦 Go to Borrow
+                </button>
+            </div>
+
+            <!-- Assets List -->
+            <div class="section-title">Your Assets</div>
+            <div class="assets-list">
+                <!-- ETH Asset Card -->
+                <div class="asset-card">
+                    <div class="asset-header">
+                        <div class="asset-info">
+                            <span class="asset-icon">Ξ</span>
+                            <span class="asset-name">Ethereum (ETH)</span>
+                        </div>
+                        <div class="asset-actions">
+                            <button class="btn-small btn-deposit" onclick="window.location.href='deposit.html'">Deposit</button>
+                            <button class="btn-small btn-withdraw" onclick="window.location.href='deposit.html'">Withdraw</button>
+                        </div>
+                    </div>
+                    <div class="asset-body">
+                        <div class="asset-row">
+                            <span class="label">Supplied:</span>
+                            <span class="value" id="ethSupplied">0.00 ETH</span>
+                        </div>
+                        <div class="asset-row">
+                            <span class="label">Supply APY:</span>
+                            <span class="value apy-positive" id="ethSupplyApy">2.5%</span>
+                        </div>
+                        <div class="asset-row">
+                            <span class="label">Borrowed:</span>
+                            <span class="value" id="ethBorrowed">0.00 ETH</span>
+                        </div>
+                        <div class="asset-row">
+                            <span class="label">Borrow APY:</span>
+                            <span class="value" id="ethBorrowApy">3.8%</span>
+                        </div>
+                        <div class="asset-row">
+                            <span class="label">Used as Collateral:</span>
+                            <span class="value" id="ethAsCollateral">Yes ✅</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- USDC Asset Card -->
+                <div class="asset-card">
+                    <div class="asset-header">
+                        <div class="asset-info">
+                            <span class="asset-icon">$</span>
+                            <span class="asset-name">USD Coin (USDC)</span>
+                        </div>
+                        <div class="asset-actions">
+                            <button class="btn-small btn-deposit" onclick="window.location.href='deposit.html'">Deposit</button>
+                            <button class="btn-small btn-withdraw" onclick="window.location.href='deposit.html'">Withdraw</button>
+                        </div>
+                    </div>
+                    <div class="asset-body">
+                        <div class="asset-row">
+                            <span class="label">Supplied:</span>
+                            <span class="value" id="usdcSupplied">0.00 USDC</span>
+                        </div>
+                        <div class="asset-row">
+                            <span class="label">Supply APY:</span>
+                            <span class="value apy-positive" id="usdcSupplyApy">5.2%</span>
+                        </div>
+                        <div class="asset-row">
+                            <span class="label">Borrowed:</span>
+                            <span class="value" id="usdcBorrowed">0.00 USDC</span>
+                        </div>
+                        <div class="asset-row">
+                            <span class="label">Borrow APY:</span>
+                            <span class="value" id="usdcBorrowApy">6.5%</span>
+                        </div>
+                        <div class="asset-row">
+                            <span class="label">Used as Collateral:</span>
+                            <span class="value" id="usdcAsCollateral">No ❌</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2026 DeFi Lending Protocol. COMP5568 Course Project.</p>
+        </footer>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

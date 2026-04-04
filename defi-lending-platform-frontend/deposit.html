@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deposit - DeFi Lending Protocol</title>
+    <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="logo">💰 Deposit & Withdraw</h1>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="deposit.html" class="nav-link active">Deposit</a>
+                <a href="borrow.html" class="nav-link">Borrow</a>
+            </nav>
+            <div class="wallet-display">
+                <span id="headerWalletAddress" class="wallet-address-short">Not Connected</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="form-container">
+                <!-- Operation Type Switch -->
+                <div class="operation-switch">
+                    <button id="depositTab" class="tab-btn active">Deposit</button>
+                    <button id="withdrawTab" class="tab-btn">Withdraw</button>
+                </div>
+
+                <!-- Asset Selection -->
+                <div class="form-group">
+                    <label class="form-label">Select Asset</label>
+                    <select id="assetSelect" class="form-select">
+                        <option value="ETH">Ethereum (ETH)</option>
+                        <option value="USDC">USD Coin (USDC)</option>
+                    </select>
+                </div>
+
+                <!-- Amount Input -->
+                <div class="form-group">
+                    <label class="form-label">Amount</label>
+                    <div class="input-with-max">
+                        <input type="number" id="amountInput" class="form-input" placeholder="0.00" step="0.000001" min="0">
+                        <button id="maxBtn" class="btn-max">MAX</button>
+                    </div>
+                    <div class="balance-info">
+                        <span class="label">Available Balance:</span>
+                        <span id="availableBalance" class="value">0.00</span>
+                    </div>
+                </div>
+
+                <!-- Use as Collateral Toggle (only for deposit) -->
+                <div id="collateralSection" class="form-group">
+                    <label class="toggle-label">
+                        <span class="toggle-text">Use as Collateral</span>
+                        <input type="checkbox" id="useAsCollateral" class="toggle-checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <p class="help-text">Enable this to use the asset as collateral for borrowing</p>
+                </div>
+
+                <!-- Transaction Summary -->
+                <div class="transaction-summary">
+                    <h3 class="summary-title">Transaction Summary</h3>
+                    <div class="summary-row">
+                        <span class="label">Current Supply APY:</span>
+                        <span id="currentApy" class="value apy-positive">--%</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="label">Estimated Annual Yield:</span>
+                        <span id="estimatedYield" class="value">--</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="label">Transaction Fee:</span>
+                        <span class="value">~$0.50 (gas estimate)</span>
+                    </div>
+                </div>
+
+                <!-- Action Button -->
+                <button id="actionButton" class="btn-primary btn-block btn-large">
+                    💰 Deposit
+                </button>
+
+                <!-- Result Message -->
+                <div id="resultMessage" class="result-message" style="display: none;"></div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2026 DeFi Lending Protocol. COMP5568 Course Project.</p>
+        </footer>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/op.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
