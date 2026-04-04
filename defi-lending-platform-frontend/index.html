@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decentralized Lending & Borrowing Protocol</title>
+    <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="logo">🏦 DeFi Lending Protocol</h1>
+            <nav class="nav">
+                <a href="index.html" class="nav-link active">Home</a>
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="deposit.html" class="nav-link">Deposit</a>
+                <a href="borrow.html" class="nav-link">Borrow</a>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="welcome-section">
+                <h2 class="welcome-title">Decentralized Lending & Borrowing Protocol</h2>
+                <p class="welcome-subtitle">Earn interest on your crypto or borrow against your holdings</p>
+                
+                <!-- Connect Wallet Button -->
+                <div class="connect-wallet-section">
+                    <button id="connectWalletBtn" class="btn-primary btn-large">
+                        🔗 Connect Wallet
+                    </button>
+                    
+                    <!-- Wallet Info (shown after connection) -->
+                    <div id="walletInfo" class="wallet-info-card" style="display: none;">
+                        <div class="info-row">
+                            <span class="label">Wallet Address:</span>
+                            <span id="walletAddress" class="value">--</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Chain ID:</span>
+                            <span id="chainId" class="value">--</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Status:</span>
+                            <span id="connectionStatus" class="value status-connected">Connected ✅</span>
+                        </div>
+                        <button id="goToDashboardBtn" class="btn-secondary btn-block">
+                            📊 Go to Dashboard
+                        </button>
+                    </div>
+                    
+                    <!-- Error Message -->
+                    <div id="errorMessage" class="error-message" style="display: none;"></div>
+                </div>
+                
+                <!-- Features -->
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">💰</div>
+                        <h3>Earn Interest</h3>
+                        <p>Supply crypto and earn passive income with competitive APY rates</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🏦</div>
+                        <h3>Borrow Assets</h3>
+                        <p>Borrow against your collateral at low interest rates</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔒</div>
+                        <h3>Secure & Decentralized</h3>
+                        <p>Non-custodial protocol powered by smart contracts</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2026 DeFi Lending Protocol. COMP5568 Course Project.</p>
+        </footer>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
