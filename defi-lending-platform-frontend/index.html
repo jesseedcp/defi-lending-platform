@@ -8,7 +8,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <header class="header">
             <h1 class="logo">🏦 DeFi Lending Protocol</h1>
             <nav class="nav">
@@ -16,22 +15,19 @@
                 <a href="dashboard.html" class="nav-link">Dashboard</a>
                 <a href="deposit.html" class="nav-link">Deposit</a>
                 <a href="borrow.html" class="nav-link">Borrow</a>
+                <a href="advanced.html" class="nav-link">Advanced</a>
             </nav>
         </header>
 
-        <!-- Main Content -->
         <main class="main-content">
             <div class="welcome-section">
                 <h2 class="welcome-title">Decentralized Lending & Borrowing Protocol</h2>
-                <p class="welcome-subtitle">Earn interest on your crypto or borrow against your holdings</p>
-                
-                <!-- Connect Wallet Button -->
+                <!-- <p class="welcome-subtitle">当前仓库没有 HTTP 后端 API，前端需要直接对接 LendingPool 合约和 MetaMask 钱包</p> -->
+
                 <div class="connect-wallet-section">
-                    <button id="connectWalletBtn" class="btn-primary btn-large">
-                        🔗 Connect Wallet
-                    </button>
-                    
-                    <!-- Wallet Info (shown after connection) -->
+                    <button id="connectWalletBtn" class="btn-primary btn-large">🔗 Connect Wallet</button>
+                    <button id="disconnectWalletBtn" class="btn-secondary btn-large" style="display: none;">🔌 Disconnect</button>
+                    <button id="switchNetworkBtn" class="btn-secondary btn-large" style="display: none;">🛰️ Switch To Sepolia</button>
                     <div id="walletInfo" class="wallet-info-card" style="display: none;">
                         <div class="info-row">
                             <span class="label">Wallet Address:</span>
@@ -45,43 +41,108 @@
                             <span class="label">Status:</span>
                             <span id="connectionStatus" class="value status-connected">Connected ✅</span>
                         </div>
+                        <div class="info-row">
+                            <span class="label">Session Token:</span>
+                            <span id="sessionToken" class="value">--</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Session Expiry:</span>
+                            <span id="sessionExpiry" class="value">--</span>
+                        </div>
                         <button id="goToDashboardBtn" class="btn-secondary btn-block">
                             📊 Go to Dashboard
                         </button>
                     </div>
-                    
-                    <!-- Error Message -->
                     <div id="errorMessage" class="error-message" style="display: none;"></div>
                 </div>
-                
-                <!-- Features -->
+
+                <div class="panel-card">
+                    <div class="section-title">Deployment Config</div>
+                    <p id="deploymentConfigHint" class="panel-text">
+                        当前仓库没有 HTTP 后端 API，请在此填写已部署的 LendingPool 合约地址以启用前端联调。
+                    </p>
+                    <div class="info-grid">
+                        <div class="info-tile">
+                            <span class="info-label">Target Network</span>
+                            <span id="targetNetworkName" class="info-value">Sepolia Testnet</span>
+                        </div>
+                        <div class="info-tile">
+                            <span class="info-label">Recommended RPC</span>
+                            <span id="targetRpcUrl" class="info-value">--</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">LendingPool Address</label>
+                        <input id="poolAddressInput" class="form-input" placeholder="0x..." />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Expected Chain ID</label>
+                        <input id="expectedChainIdInput" class="form-input" placeholder="11155111" />
+                    </div>
+                    <div class="inline-actions">
+                        <button id="saveDeploymentConfigBtn" class="btn-primary">Save Config</button>
+                        <button id="refreshProtocolBtn" class="btn-secondary">Refresh Protocol</button>
+                    </div>
+                    <div id="deploymentStatus" class="status-banner" style="display: none;"></div>
+                    <div class="info-grid">
+                        <div class="info-tile">
+                            <span class="info-label">Configured Pool</span>
+                            <span id="configuredPoolAddress" class="info-value">未配置</span>
+                        </div>
+                        <div class="info-tile">
+                            <span class="info-label">Configured Chain ID</span>
+                            <span id="configuredChainId" class="info-value">未配置</span>
+                        </div>
+                    </div>
+                    <div class="section-title">Known Contract Addresses</div>
+                    <div class="info-grid">
+                        <div class="info-tile">
+                            <span class="info-label">LendingPool</span>
+                            <span id="knownPoolAddress" class="info-value">--</span>
+                        </div>
+                        <div class="info-tile">
+                            <span class="info-label">Mock USDC</span>
+                            <span id="knownUsdcAddress" class="info-value">--</span>
+                        </div>
+                        <div class="info-tile">
+                            <span class="info-label">Mock WETH</span>
+                            <span id="knownWethAddress" class="info-value">--</span>
+                        </div>
+                        <div class="info-tile">
+                            <span class="info-label">GOV</span>
+                            <span id="knownGovAddress" class="info-value">--</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="features-grid">
                     <div class="feature-card">
                         <div class="feature-icon">💰</div>
-                        <h3>Earn Interest</h3>
-                        <p>Supply crypto and earn passive income with competitive APY rates</p>
+                        <h3>Wallet Auth</h3>
+                        <p>使用 MetaMask 进行链上认证，并在本地维护会话 token 与自动续期状态。</p>
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon">🏦</div>
-                        <h3>Borrow Assets</h3>
-                        <p>Borrow against your collateral at low interest rates</p>
+                        <h3>Protocol API</h3>
+                        <p>统一封装合约读写接口，覆盖 supply、borrow、repay、claimRewards、liquidate 等能力。</p>
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon">🔒</div>
-                        <h3>Secure & Decentralized</h3>
-                        <p>Non-custodial protocol powered by smart contracts</p>
+                        <h3>Error Handling</h3>
+                        <p>对钱包 RPC 错误、合约 revert 和网络不一致提供友好的中文提示。</p>
                     </div>
                 </div>
             </div>
         </main>
 
-        <!-- Footer -->
         <footer class="footer">
             <p>&copy; 2026 DeFi Lending Protocol. COMP5568 Course Project.</p>
         </footer>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
     <script src="js/config.js"></script>
+    <script src="js/protocol.js"></script>
     <script src="js/wallet.js"></script>
     <script src="js/main.js"></script>
 </body>

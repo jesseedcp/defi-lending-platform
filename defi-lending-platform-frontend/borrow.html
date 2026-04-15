@@ -8,7 +8,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <header class="header">
             <h1 class="logo">🏦 Borrow & Repay</h1>
             <nav class="nav">
@@ -16,38 +15,32 @@
                 <a href="dashboard.html" class="nav-link">Dashboard</a>
                 <a href="deposit.html" class="nav-link">Deposit</a>
                 <a href="borrow.html" class="nav-link active">Borrow</a>
+                <a href="advanced.html" class="nav-link">Advanced</a>
             </nav>
             <div class="wallet-display">
-                <span id="headerWalletAddress" class="wallet-address-short">Not Connected</span>
+                <span id="headerWalletAddress" class="wallet-address-short">未连接</span>
             </div>
         </header>
 
-        <!-- Main Content -->
         <main class="main-content">
+            <div id="borrowStatusBanner" class="status-banner" style="display: none;"></div>
             <div class="form-container">
-                <!-- Borrow Capacity Display -->
                 <div class="borrow-capacity-banner">
                     <div class="capacity-label">Available Borrow Capacity</div>
                     <div class="capacity-value" id="borrowCapacityDisplay">$0.00</div>
-                    <div class="capacity-sub">Maximum amount you can borrow</div>
+                    <!-- <div class="capacity-sub">基于 getAccountSnapshot 实时读取</div> -->
                 </div>
 
-                <!-- Operation Type Switch -->
                 <div class="operation-switch">
                     <button id="borrowTab" class="tab-btn active">Borrow</button>
                     <button id="repayTab" class="tab-btn">Repay</button>
                 </div>
 
-                <!-- Asset Selection -->
                 <div class="form-group">
                     <label class="form-label">Select Asset</label>
-                    <select id="assetSelect" class="form-select">
-                        <option value="ETH">Ethereum (ETH)</option>
-                        <option value="USDC">USD Coin (USDC)</option>
-                    </select>
+                    <select id="assetSelect" class="form-select"></select>
                 </div>
 
-                <!-- Amount Input -->
                 <div class="form-group">
                     <label class="form-label">Amount</label>
                     <div class="input-with-max">
@@ -60,7 +53,6 @@
                     </div>
                 </div>
 
-                <!-- Transaction Details -->
                 <div class="transaction-details">
                     <h3 class="details-title">Transaction Details</h3>
                     <div class="detail-row">
@@ -76,28 +68,30 @@
                         <span class="value warning-text">High risk if HF < 1</span>
                     </div>
                     <div class="detail-row">
-                        <span class="label">LTV Limit:</span>
-                        <span class="value">75% (Max allowed)</span>
+                        <span class="label">Available Liquidity:</span>
+                        <span id="liquidityAvailable" class="value">--</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Effective LTV Limit:</span>
+                        <span id="effectiveLtvLimit" class="value">--</span>
                     </div>
                 </div>
 
-                <!-- Action Button -->
                 <button id="actionButton" class="btn-primary btn-block btn-large">
                     🏦 Borrow
                 </button>
-
-                <!-- Result Message -->
                 <div id="resultMessage" class="result-message" style="display: none;"></div>
             </div>
         </main>
 
-        <!-- Footer -->
         <footer class="footer">
             <p>&copy; 2026 DeFi Lending Protocol. COMP5568 Course Project.</p>
         </footer>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
     <script src="js/config.js"></script>
+    <script src="js/protocol.js"></script>
     <script src="js/wallet.js"></script>
     <script src="js/op.js"></script>
     <script src="js/main.js"></script>

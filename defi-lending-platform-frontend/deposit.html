@@ -8,39 +8,33 @@
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <header class="header">
-            <h1 class="logo">💰 Deposit & Withdraw</h1>
+            <h1 class="logo">💰 Supply & Withdraw</h1>
             <nav class="nav">
                 <a href="index.html" class="nav-link">Home</a>
                 <a href="dashboard.html" class="nav-link">Dashboard</a>
                 <a href="deposit.html" class="nav-link active">Deposit</a>
                 <a href="borrow.html" class="nav-link">Borrow</a>
+                <a href="advanced.html" class="nav-link">Advanced</a>
             </nav>
             <div class="wallet-display">
-                <span id="headerWalletAddress" class="wallet-address-short">Not Connected</span>
+                <span id="headerWalletAddress" class="wallet-address-short">未连接</span>
             </div>
         </header>
 
-        <!-- Main Content -->
         <main class="main-content">
+            <div id="depositStatusBanner" class="status-banner" style="display: none;"></div>
             <div class="form-container">
-                <!-- Operation Type Switch -->
                 <div class="operation-switch">
-                    <button id="depositTab" class="tab-btn active">Deposit</button>
+                    <button id="depositTab" class="tab-btn active">Supply</button>
                     <button id="withdrawTab" class="tab-btn">Withdraw</button>
                 </div>
 
-                <!-- Asset Selection -->
                 <div class="form-group">
                     <label class="form-label">Select Asset</label>
-                    <select id="assetSelect" class="form-select">
-                        <option value="ETH">Ethereum (ETH)</option>
-                        <option value="USDC">USD Coin (USDC)</option>
-                    </select>
+                    <select id="assetSelect" class="form-select"></select>
                 </div>
 
-                <!-- Amount Input -->
                 <div class="form-group">
                     <label class="form-label">Amount</label>
                     <div class="input-with-max">
@@ -53,17 +47,15 @@
                     </div>
                 </div>
 
-                <!-- Use as Collateral Toggle (only for deposit) -->
                 <div id="collateralSection" class="form-group">
                     <label class="toggle-label">
-                        <span class="toggle-text">Use as Collateral</span>
-                        <input type="checkbox" id="useAsCollateral" class="toggle-checkbox" checked>
+                        <span class="toggle-text">Collateral Behavior</span>
+                        <input type="checkbox" id="useAsCollateral" class="toggle-checkbox" checked disabled>
                         <span class="toggle-slider"></span>
                     </label>
-                    <p class="help-text">Enable this to use the asset as collateral for borrowing</p>
+                    <p id="collateralBehavior" class="help-text">当前合约会自动将已存入资产计入抵押。</p>
                 </div>
 
-                <!-- Transaction Summary -->
                 <div class="transaction-summary">
                     <h3 class="summary-title">Transaction Summary</h3>
                     <div class="summary-row">
@@ -75,28 +67,30 @@
                         <span id="estimatedYield" class="value">--</span>
                     </div>
                     <div class="summary-row">
-                        <span class="label">Transaction Fee:</span>
-                        <span class="value">~$0.50 (gas estimate)</span>
+                        <span class="label">Allowance:</span>
+                        <span id="allowanceStatus" class="value">--</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="label">Pool Liquidity:</span>
+                        <span id="liquidityDepth" class="value">--</span>
                     </div>
                 </div>
 
-                <!-- Action Button -->
                 <button id="actionButton" class="btn-primary btn-block btn-large">
-                    💰 Deposit
+                    💰 Supply
                 </button>
-
-                <!-- Result Message -->
                 <div id="resultMessage" class="result-message" style="display: none;"></div>
             </div>
         </main>
 
-        <!-- Footer -->
         <footer class="footer">
             <p>&copy; 2026 DeFi Lending Protocol. COMP5568 Course Project.</p>
         </footer>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
     <script src="js/config.js"></script>
+    <script src="js/protocol.js"></script>
     <script src="js/wallet.js"></script>
     <script src="js/op.js"></script>
     <script src="js/main.js"></script>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced - DeFi Lending Protocol</title>
+    <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="logo">🧪 Advanced Operations</h1>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="deposit.html" class="nav-link">Deposit</a>
+                <a href="borrow.html" class="nav-link">Borrow</a>
+                <a href="advanced.html" class="nav-link active">Advanced</a>
+            </nav>
+            <div class="wallet-display">
+                <span id="headerWalletAddress" class="wallet-address-short">未连接</span>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div id="advancedStatusBanner" class="status-banner" style="display: none;"></div>
+
+            <div class="page-grid">
+                <section class="panel-card">
+                    <div class="section-title">Protocol Overview</div>
+                    <div class="info-grid">
+                        <div class="info-tile">
+                            <span class="info-label">Pool Address</span>
+                            <span id="advancedPoolAddress" class="info-value">未配置</span>
+                        </div>
+                        <div class="info-tile">
+                            <span class="info-label">Owner</span>
+                            <span id="advancedOwnerAddress" class="info-value">--</span>
+                        </div>
+                        <div class="info-tile">
+                            <span class="info-label">Reward Token</span>
+                            <span id="advancedRewardTokenAddress" class="info-value">未设置</span>
+                        </div>
+                        <div class="info-tile">
+                            <span class="info-label">Network</span>
+                            <span id="advancedNetwork" class="info-value">--</span>
+                        </div>
+                        <div class="info-tile">
+                            <span class="info-label">Accrued Rewards</span>
+                            <span id="advancedAccruedRewards" class="info-value">0.0000 RWD</span>
+                        </div>
+                        <div class="info-tile">
+                            <span class="info-label">Reward Balance</span>
+                            <span id="advancedRewardBalance" class="info-value">0.0000 RWD</span>
+                        </div>
+                        <div class="info-tile">
+                            <span class="info-label">Last Sync</span>
+                            <span id="advancedSyncTime" class="info-value">未同步</span>
+                        </div>
+                    </div>
+                    <div class="inline-actions">
+                        <button id="advancedClaimRewardsBtn" class="btn-secondary">🎁 Claim Rewards</button>
+                    </div>
+                    <div id="advancedRewardsMessage" class="result-message" style="display: none;"></div>
+                </section>
+
+                <section class="panel-card">
+                    <div class="section-title">Liquidation</div>
+                    <div class="form-group">
+                        <label class="form-label">Borrower Address</label>
+                        <input id="liquidationBorrower" class="form-input" placeholder="0x..." />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Debt Asset</label>
+                        <select id="liquidationDebtAsset" class="form-select"></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Collateral Asset</label>
+                        <select id="liquidationCollateralAsset" class="form-select"></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Requested Repay Amount</label>
+                        <input id="liquidationAmount" class="form-input" placeholder="0.00" />
+                    </div>
+                    <div class="inline-actions">
+                        <button id="previewLiquidationBtn" class="btn-primary">Preview</button>
+                        <button id="executeLiquidationBtn" class="btn-secondary">Execute Liquidation</button>
+                    </div>
+                    <div class="transaction-details">
+                        <div class="detail-row">
+                            <span class="label">Actual Repay</span>
+                            <span id="previewRepayAmount" class="value">--</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Collateral To Seize</span>
+                            <span id="previewCollateralToSeize" class="value">--</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Borrower Health Factor</span>
+                            <span id="previewHealthFactor" class="value">--</span>
+                        </div>
+                    </div>
+                    <div id="advancedLiquidationMessage" class="result-message" style="display: none;"></div>
+                </section>
+
+                <section class="panel-card">
+                    <div class="section-title">Flash Loan</div>
+                    <p class="panel-text">需要你提前部署兼容 IFlashLoanReceiver 的接收合约；前端仅负责触发 pool.flashLoan。</p>
+                    <div class="form-group">
+                        <label class="form-label">Receiver Address</label>
+                        <input id="flashLoanReceiver" class="form-input" placeholder="0x..." />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Asset</label>
+                        <select id="flashLoanAsset" class="form-select"></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Amount</label>
+                        <input id="flashLoanAmount" class="form-input" placeholder="0.00" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Params Bytes</label>
+                        <input id="flashLoanParams" class="form-input" placeholder="0x" />
+                    </div>
+                    <button id="flashLoanBtn" class="btn-primary btn-block">⚡ Execute Flash Loan</button>
+                    <div id="advancedFlashLoanMessage" class="result-message" style="display: none;"></div>
+                </section>
+
+                <section class="panel-card">
+                    <div class="section-title">Admin</div>
+                    <div id="adminAccessNotice" class="status-banner" style="display: none;"></div>
+                    <div class="form-group">
+                        <label class="form-label">Set Reward Token</label>
+                        <input id="rewardTokenAddressInput" class="form-input" placeholder="0x..." />
+                    </div>
+                    <button id="setRewardTokenBtn" class="btn-primary btn-block">Set Reward Token</button>
+
+                    <div class="subsection-title">List Market</div>
+                    <div class="form-group">
+                        <label class="form-label">Asset Address</label>
+                        <input id="listMarketAsset" class="form-input" placeholder="0x..." />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Price Feed Address</label>
+                        <input id="listMarketPriceFeed" class="form-input" placeholder="0x..." />
+                    </div>
+                    <div class="two-column-grid">
+                        <div class="form-group">
+                            <label class="form-label">LTV BPS</label>
+                            <input id="listMarketLtv" class="form-input" placeholder="7500" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Threshold BPS</label>
+                            <input id="listMarketThreshold" class="form-input" placeholder="8000" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Base Rate WAD</label>
+                            <input id="listMarketBaseRate" class="form-input" placeholder="1000000000000" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Slope WAD</label>
+                            <input id="listMarketSlope" class="form-input" placeholder="4000000000000" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Kink BPS</label>
+                            <input id="listMarketKink" class="form-input" placeholder="8000" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Jump Slope WAD</label>
+                            <input id="listMarketJumpSlope" class="form-input" placeholder="20000000000000" />
+                        </div>
+                    </div>
+                    <button id="listMarketBtn" class="btn-secondary btn-block">List Market</button>
+
+                    <div class="subsection-title">Update Market</div>
+                    <div class="form-group">
+                        <label class="form-label">Existing Market</label>
+                        <select id="updateMarketAssetSelect" class="form-select"></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Asset Address</label>
+                        <input id="updateMarketAsset" class="form-input" placeholder="0x..." />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Price Feed Address</label>
+                        <input id="updateMarketPriceFeed" class="form-input" placeholder="0x..." />
+                    </div>
+                    <div class="two-column-grid">
+                        <div class="form-group">
+                            <label class="form-label">LTV BPS</label>
+                            <input id="updateMarketLtv" class="form-input" placeholder="7500" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Threshold BPS</label>
+                            <input id="updateMarketThreshold" class="form-input" placeholder="8000" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Base Rate WAD</label>
+                            <input id="updateMarketBaseRate" class="form-input" placeholder="1000000000000" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Slope WAD</label>
+                            <input id="updateMarketSlope" class="form-input" placeholder="4000000000000" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Kink BPS</label>
+                            <input id="updateMarketKink" class="form-input" placeholder="8000" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Jump Slope WAD</label>
+                            <input id="updateMarketJumpSlope" class="form-input" placeholder="20000000000000" />
+                        </div>
+                    </div>
+                    <button id="updateMarketBtn" class="btn-secondary btn-block">Update Market</button>
+                    <div id="advancedAdminMessage" class="result-message" style="display: none;"></div>
+                </section>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2026 DeFi Lending Protocol. COMP5568 Course Project.</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/protocol.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/op.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

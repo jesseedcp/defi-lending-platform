@@ -678,6 +678,110 @@ body {
     border: 1px solid var(--danger-color);
 }
 
+.status-banner {
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-primary);
+}
+
+.status-info {
+    background: #E0E7FF;
+    color: #3730A3;
+    border-color: #A5B4FC;
+}
+
+.status-warning {
+    background: #FEF3C7;
+    color: #92400E;
+    border-color: #F59E0B;
+}
+
+.status-error {
+    background: var(--error-bg);
+    color: var(--error-text);
+    border-color: var(--danger-color);
+}
+
+.panel-card {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.panel-text {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.inline-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.info-tile {
+    background: var(--bg-color);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.info-label {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.info-value {
+    color: var(--text-primary);
+    font-family: 'Courier New', monospace;
+    word-break: break-all;
+}
+
+.page-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 1.5rem;
+}
+
+.two-column-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.subsection-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.empty-card {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    color: var(--text-secondary);
+}
+
 /* Footer */
 .footer {
     background: var(--card-bg);
@@ -709,5 +813,10 @@ body {
     
     .quick-actions {
         flex-direction: column;
+    }
+
+    .page-grid,
+    .two-column-grid {
+        grid-template-columns: 1fr;
     }
 }

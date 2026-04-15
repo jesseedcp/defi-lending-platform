@@ -1,25 +1,11 @@
-/**
- * DeFi Lending Protocol - Operations Module
- * Handles deposit, withdraw, borrow, and repay operations
- * COMP5568 Course Project
- */
-
-// Current operation state
-let currentOperation = {
-    type: 'deposit', // 'deposit' or 'withdraw'
-    asset: 'ETH',
-    amount: 0
+const depositState = {
+    type: 'deposit'
 };
 
-let currentBorrowOperation = {
-    type: 'borrow', // 'borrow' or 'repay'
-    asset: 'ETH',
-    amount: 0
+const borrowState = {
+    type: 'borrow'
 };
 
-/**
- * Initialize Deposit/Withdraw page functionality
- */
 function initDepositWithdraw() {
     const depositTab = document.getElementById('depositTab');
     const withdrawTab = document.getElementById('withdrawTab');
@@ -27,187 +13,119 @@ function initDepositWithdraw() {
     const amountInput = document.getElementById('amountInput');
     const maxBtn = document.getElementById('maxBtn');
     const actionButton = document.getElementById('actionButton');
-    const collateralSection = document.getElementById('collateralSection');
-    const resultMessage = document.getElementById('resultMessage');
-    
-    if (!depositTab || !withdrawTab) return;
-    
-    // Tab switching
-    depositTab.addEventListener('click', () => {
-        currentOperation.type = 'deposit';
-        depositTab.classList.add('active');
-        withdrawTab.classList.remove('active');
-        collateralSection.style.display = 'block';
-        actionButton.textContent = '💰 Deposit';
-        updateBalanceDisplay();
-        updateTransactionSummary();
-        hideResultMessage();
+
+    populateAssetSelect(assetSelect);
+    renderDepositWithdraw();
+
+    document.addEventListener('protocol:updated', renderDepositWithdraw);
+
+    depositTab?.addEventListener('click', () => {
+        depositState.type = 'deposit';
+        renderDepositWithdraw();
+        hideResultMessage('resultMessage');
     });
-    
-    withdrawTab.addEventListener('click', () => {
-        currentOperation.type = 'withdraw';
-        withdrawTab.classList.add('active');
-        depositTab.classList.remove('active');
-        collateralSection.style.display = 'none';
-        actionButton.textContent = '💸 Withdraw';
-        updateBalanceDisplay();
-        updateTransactionSummary();
-        hideResultMessage();
+
+    withdrawTab?.addEventListener('click', () => {
+        depositState.type = 'withdraw';
+        renderDepositWithdraw();
+        hideResultMessage('resultMessage');
     });
-    
-    // Asset selection change
-    assetSelect.addEventListener('change', () => {
-        currentOperation.asset = assetSelect.value;
-        updateBalanceDisplay();
-        updateTransactionSummary();
-    });
-    
-    // Max button
-    maxBtn.addEventListener('click', () => {
-        const assetData = AppState.portfolio[currentOperation.asset];
-        if (currentOperation.type === 'deposit') {
-            amountInput.value = assetData.balance;
-        } else {
-            amountInput.value = assetData.supplied;
+
+    assetSelect?.addEventListener('change', renderDepositWithdraw);
+    amountInput?.addEventListener('input', renderDepositWithdraw);
+
+    maxBtn?.addEventListener('click', () => {
+        const asset = Utils.resolveAsset(assetSelect?.value);
+
+        if (!asset || !amountInput) {
+            return;
         }
-        updateTransactionSummary();
+
+        amountInput.value = depositState.type === 'deposit'
+            ? asset.walletBalance.toFixed(6)
+            : asset.supplied.toFixed(6);
+
+        renderDepositWithdraw();
     });
-    
-    // Amount input change
-    amountInput.addEventListener('input', () => {
-        updateTransactionSummary();
+
+    actionButton?.addEventListener('click', async () => {
+        await withButtonState(actionButton, depositState.type === 'deposit' ? '⏳ Supply 中...' : '⏳ Withdraw 中...', async () => {
+            const asset = Utils.resolveAsset(assetSelect?.value);
+            const amount = amountInput?.value || '';
+
+            if (!asset) {
+                throw new Error('当前没有可用资产');
+            }
+
+            if (depositState.type === 'deposit') {
+                const result = await Protocol.supply(asset.address, amount);
+                showResultMessage(result.approvalHash ? '授权并存入成功' : '存入成功', 'success', 'resultMessage');
+            } else {
+                await Protocol.withdraw(asset.address, amount);
+                showResultMessage('提取成功', 'success', 'resultMessage');
+            }
+
+            if (amountInput) {
+                amountInput.value = '';
+            }
+
+            renderDepositWithdraw();
+        }, 'resultMessage');
     });
-    
-    // Action button click
-    actionButton.addEventListener('click', handleDepositWithdrawAction);
-    
-    // Initial display update
-    updateBalanceDisplay();
-    updateTransactionSummary();
 }
 
-/**
- * Update balance display based on current operation and asset
- */
-function updateBalanceDisplay() {
-    const balanceEl = document.getElementById('availableBalance');
-    if (!balanceEl) return;
-    
-    const assetData = AppState.portfolio[currentOperation.asset];
-    
-    if (currentOperation.type === 'deposit') {
-        balanceEl.textContent = Utils.formatToken(assetData.balance, currentOperation.asset);
-    } else {
-        balanceEl.textContent = Utils.formatToken(assetData.supplied, currentOperation.asset);
-    }
-}
-
-/**
- * Update transaction summary display
- */
-function updateTransactionSummary() {
-    const amount = parseFloat(document.getElementById('amountInput').value) || 0;
-    const assetData = AppState.portfolio[currentOperation.asset];
-    
-    // Update APY display
-    const apyEl = document.getElementById('currentApy');
-    if (apyEl) {
-        apyEl.textContent = `${assetData.supplyApy}%`;
-    }
-    
-    // Calculate estimated annual yield
-    const estimatedYieldEl = document.getElementById('estimatedYield');
-    if (estimatedYieldEl && currentOperation.type === 'deposit') {
-        const yieldValue = amount * assetData.price * (assetData.supplyApy / 100);
-        estimatedYieldEl.textContent = Utils.formatCurrency(yieldValue);
-    } else if (estimatedYieldEl) {
-        estimatedYieldEl.textContent = '--';
-    }
-}
-
-/**
- * Handle deposit/withdraw action button click
- */
-function handleDepositWithdrawAction() {
+function renderDepositWithdraw() {
+    const depositTab = document.getElementById('depositTab');
+    const withdrawTab = document.getElementById('withdrawTab');
+    const assetSelect = document.getElementById('assetSelect');
     const amountInput = document.getElementById('amountInput');
-    const amount = parseFloat(amountInput.value);
-    const asset = currentOperation.asset;
-    const useAsCollateral = document.getElementById('useAsCollateral')?.checked || false;
-    
-    // Validation
-    if (!amount || amount <= 0) {
-        showResultMessage('Please enter a valid amount', 'error');
+    const actionButton = document.getElementById('actionButton');
+    const collateralSection = document.getElementById('collateralSection');
+    populateAssetSelect(assetSelect);
+    const asset = Utils.resolveAsset(assetSelect?.value || AppState.protocol.assets[0]?.address);
+    const amount = parseFloat(amountInput?.value || '0') || 0;
+
+    if (depositTab && withdrawTab) {
+        depositTab.classList.toggle('active', depositState.type === 'deposit');
+        withdrawTab.classList.toggle('active', depositState.type === 'withdraw');
+    }
+
+    if (!asset) {
+        updateElementText('availableBalance', '--');
+        updateElementText('currentApy', '--');
+        updateElementText('estimatedYield', '--');
+        updateElementText('allowanceStatus', '--');
+        updateElementText('liquidityDepth', '--');
+        if (actionButton) {
+            actionButton.disabled = true;
+        }
         return;
     }
-    
-    const assetData = AppState.portfolio[asset];
-    
-    if (currentOperation.type === 'deposit') {
-        // Check if enough balance
-        if (amount > assetData.balance) {
-            showResultMessage('Insufficient balance', 'error');
-            return;
-        }
-        
-        // Execute deposit (mock)
-        assetData.balance -= amount;
-        assetData.supplied += amount;
-        assetData.collateralEnabled = useAsCollateral;
-        
-        showResultMessage(`✅ Successfully deposited ${Utils.formatToken(amount, asset)}`, 'success');
-        
-    } else {
-        // Withdraw
-        if (amount > assetData.supplied) {
-            showResultMessage('Insufficient supplied amount', 'error');
-            return;
-        }
-        
-        // Execute withdraw (mock)
-        assetData.supplied -= amount;
-        assetData.balance += amount;
-        
-        showResultMessage(`✅ Successfully withdrew ${Utils.formatToken(amount, asset)}`, 'success');
+
+    if (collateralSection) {
+        collateralSection.style.display = depositState.type === 'deposit' ? 'block' : 'none';
     }
-    
-    // Clear input
-    amountInput.value = '';
-    
-    // Update transaction summary
-    updateTransactionSummary();
-    updateBalanceDisplay();
-}
 
-/**
- * Show result message
- */
-function showResultMessage(message, type) {
-    const resultMessage = document.getElementById('resultMessage');
-    if (!resultMessage) return;
-    
-    resultMessage.textContent = message;
-    resultMessage.className = `result-message result-${type}`;
-    resultMessage.style.display = 'block';
-    
-    // Auto-hide after 3 seconds
-    setTimeout(() => {
-        hideResultMessage();
-    }, 3000);
-}
-
-/**
- * Hide result message
- */
-function hideResultMessage() {
-    const resultMessage = document.getElementById('resultMessage');
-    if (resultMessage) {
-        resultMessage.style.display = 'none';
+    if (actionButton) {
+        actionButton.disabled = !AppState.walletConnected || !Protocol.isDeploymentConfigured() || !Protocol.isExpectedChainMatched();
+        actionButton.textContent = depositState.type === 'deposit' ? '💰 Supply' : '💸 Withdraw';
     }
+
+    updateElementText(
+        'availableBalance',
+        depositState.type === 'deposit'
+            ? Utils.formatToken(asset.walletBalance, asset.symbol)
+            : Utils.formatToken(asset.supplied, asset.symbol)
+    );
+    updateElementText('currentApy', Utils.formatPercent(asset.supplyApy));
+    updateElementText('estimatedYield', depositState.type === 'deposit'
+        ? Utils.formatCurrency(amount * asset.priceUsd * (asset.supplyApy / 100))
+        : '--');
+    updateElementText('allowanceStatus', Utils.formatToken(asset.allowance, asset.symbol));
+    updateElementText('liquidityDepth', Utils.formatToken(asset.availableLiquidity, asset.symbol));
+    updateElementText('collateralBehavior', '当前合约会自动将已存入资产计入抵押，前端不再单独维护 collateral toggle。');
 }
 
-/**
- * Initialize Borrow/Repay page functionality
- */
 function initBorrowRepay() {
     const borrowTab = document.getElementById('borrowTab');
     const repayTab = document.getElementById('repayTab');
@@ -215,230 +133,378 @@ function initBorrowRepay() {
     const amountInput = document.getElementById('amountInput');
     const maxBtn = document.getElementById('maxBtn');
     const actionButton = document.getElementById('actionButton');
-    const resultMessage = document.getElementById('resultMessage');
-    
-    if (!borrowTab || !repayTab) return;
-    
-    // Update borrow capacity display
-    updateBorrowCapacityDisplay();
-    
-    // Tab switching
-    borrowTab.addEventListener('click', () => {
-        currentBorrowOperation.type = 'borrow';
-        borrowTab.classList.add('active');
-        repayTab.classList.remove('active');
-        actionButton.textContent = '🏦 Borrow';
-        updateCurrentDebtDisplay();
-        updateTransactionDetails();
-        hideResultMessage();
+
+    populateAssetSelect(assetSelect);
+    renderBorrowRepay();
+
+    document.addEventListener('protocol:updated', renderBorrowRepay);
+
+    borrowTab?.addEventListener('click', () => {
+        borrowState.type = 'borrow';
+        renderBorrowRepay();
+        hideResultMessage('resultMessage');
     });
-    
-    repayTab.addEventListener('click', () => {
-        currentBorrowOperation.type = 'repay';
-        repayTab.classList.add('active');
-        borrowTab.classList.remove('active');
-        actionButton.textContent = '💵 Repay';
-        updateCurrentDebtDisplay();
-        updateTransactionDetails();
-        hideResultMessage();
+
+    repayTab?.addEventListener('click', () => {
+        borrowState.type = 'repay';
+        renderBorrowRepay();
+        hideResultMessage('resultMessage');
     });
-    
-    // Asset selection change
-    assetSelect.addEventListener('change', () => {
-        currentBorrowOperation.asset = assetSelect.value;
-        updateCurrentDebtDisplay();
-        updateTransactionDetails();
-    });
-    
-    // Max button
-    maxBtn.addEventListener('click', () => {
-        const assetData = AppState.portfolio[currentBorrowOperation.asset];
-        if (currentBorrowOperation.type === 'borrow') {
-            // Max borrow amount based on capacity
-            const capacity = Utils.calculateBorrowCapacity();
-            const maxAmount = capacity / assetData.price;
-            amountInput.value = maxAmount.toFixed(6);
+
+    assetSelect?.addEventListener('change', renderBorrowRepay);
+    amountInput?.addEventListener('input', renderBorrowRepay);
+
+    maxBtn?.addEventListener('click', () => {
+        const asset = Utils.resolveAsset(assetSelect?.value);
+
+        if (!asset || !amountInput) {
+            return;
+        }
+
+        if (borrowState.type === 'borrow') {
+            const maxByCapacity = asset.priceUsd ? AppState.protocol.accountSnapshot.borrowCapacityUsd / asset.priceUsd : 0;
+            const maxBorrowAmount = Math.min(maxByCapacity, asset.availableLiquidity);
+            amountInput.value = Math.max(0, maxBorrowAmount).toFixed(6);
         } else {
-            // Max repay = current debt
-            amountInput.value = assetData.borrowed.toFixed(6);
+            amountInput.value = asset.borrowed.toFixed(6);
         }
-        updateTransactionDetails();
+
+        renderBorrowRepay();
     });
-    
-    // Amount input change
-    amountInput.addEventListener('input', () => {
-        updateTransactionDetails();
+
+    actionButton?.addEventListener('click', async () => {
+        await withButtonState(actionButton, borrowState.type === 'borrow' ? '⏳ Borrow 中...' : '⏳ Repay 中...', async () => {
+            const asset = Utils.resolveAsset(assetSelect?.value);
+            const amount = amountInput?.value || '';
+
+            if (!asset) {
+                throw new Error('当前没有可用资产');
+            }
+
+            if (borrowState.type === 'borrow') {
+                await Protocol.borrow(asset.address, amount);
+                showResultMessage('借款成功', 'success', 'resultMessage');
+            } else {
+                const result = await Protocol.repay(asset.address, amount);
+                showResultMessage(result.approvalHash ? '授权并偿还成功' : '偿还成功', 'success', 'resultMessage');
+            }
+
+            if (amountInput) {
+                amountInput.value = '';
+            }
+
+            renderBorrowRepay();
+        }, 'resultMessage');
     });
-    
-    // Action button click
-    actionButton.addEventListener('click', handleBorrowRepayAction);
-    
-    // Initial display update
-    updateCurrentDebtDisplay();
-    updateTransactionDetails();
 }
 
-/**
- * Update borrow capacity display
- */
-function updateBorrowCapacityDisplay() {
-    const capacityEl = document.getElementById('borrowCapacityDisplay');
-    if (capacityEl) {
-        capacityEl.textContent = Utils.formatCurrency(Utils.calculateBorrowCapacity());
-    }
-}
-
-/**
- * Update current debt display
- */
-function updateCurrentDebtDisplay() {
-    const debtEl = document.getElementById('currentDebt');
-    if (!debtEl) return;
-    
-    const assetData = AppState.portfolio[currentBorrowOperation.asset];
-    debtEl.textContent = Utils.formatToken(assetData.borrowed, currentBorrowOperation.asset);
-}
-
-/**
- * Update transaction details (APY, HF after, etc.)
- */
-function updateTransactionDetails() {
-    const amount = parseFloat(document.getElementById('amountInput').value) || 0;
-    const asset = currentBorrowOperation.asset;
-    const assetData = AppState.portfolio[asset];
-    const operationType = currentBorrowOperation.type;
-    
-    // Update APY display
-    const apyEl = document.getElementById('borrowApy');
-    if (apyEl) {
-        apyEl.textContent = `${assetData.borrowApy}%`;
-    }
-    
-    // Calculate Health Factor after operation
-    let hfAfter = calculateHealthFactorAfterOperation(amount, operationType, asset);
-    
-    const hfAfterEl = document.getElementById('healthFactorAfter');
-    if (hfAfterEl) {
-        if (hfAfter === Infinity) {
-            hfAfterEl.textContent = '∞';
-        } else {
-            hfAfterEl.textContent = hfAfter.toFixed(3);
-        }
-        
-        // Color coding
-        if (hfAfter !== Infinity && hfAfter < 1) {
-            hfAfterEl.style.color = 'var(--danger-color)';
-        } else {
-            hfAfterEl.style.color = 'var(--text-primary)';
-        }
-    }
-    
-    // Show/hide liquidation warning
-    const warningRow = document.getElementById('liquidationWarningRow');
-    if (warningRow) {
-        if (hfAfter !== Infinity && hfAfter < 1.2) {
-            warningRow.style.display = 'flex';
-        } else {
-            warningRow.style.display = 'none';
-        }
-    }
-}
-
-/**
- * Calculate Health Factor after operation (simulation)
- */
-function calculateHealthFactorAfterOperation(amount, type, asset) {
-    // Clone portfolio data for simulation
-    const originalPortfolio = JSON.parse(JSON.stringify(AppState.portfolio));
-    
-    if (type === 'borrow') {
-        originalPortfolio[asset].borrowed += amount;
-    } else if (type === 'repay') {
-        originalPortfolio[asset].borrowed -= Math.min(amount, originalPortfolio[asset].borrowed);
-    }
-    
-    // Calculate HF with modified portfolio
-    let totalDebt = 0;
-    let weightedCollateral = 0;
-    
-    for (const [a, data] of Object.entries(originalPortfolio)) {
-        totalDebt += data.borrowed * data.price;
-        
-        if (data.collateralEnabled) {
-            const factor = a === 'ETH' ? 
-                AppState.protocolParams.ethCollateralFactor : 
-                AppState.protocolParams.usdcCollateralFactor;
-            weightedCollateral += data.supplied * data.price * factor;
-        }
-    }
-    
-    if (totalDebt === 0) return Infinity;
-    return weightedCollateral / totalDebt;
-}
-
-/**
- * Handle borrow/repay action button click
- */
-function handleBorrowRepayAction() {
+function renderBorrowRepay() {
+    const borrowTab = document.getElementById('borrowTab');
+    const repayTab = document.getElementById('repayTab');
+    const assetSelect = document.getElementById('assetSelect');
     const amountInput = document.getElementById('amountInput');
-    const amount = parseFloat(amountInput.value);
-    const asset = currentBorrowOperation.asset;
-    
-    // Validation
-    if (!amount || amount <= 0) {
-        showResultMessage('Please enter a valid amount', 'error');
+    const actionButton = document.getElementById('actionButton');
+    populateAssetSelect(assetSelect);
+    const asset = Utils.resolveAsset(assetSelect?.value || AppState.protocol.assets[0]?.address);
+    const amount = parseFloat(amountInput?.value || '0') || 0;
+    const hfAfter = Utils.calculateHealthFactorAfter(asset?.address, amount, borrowState.type);
+
+    if (borrowTab && repayTab) {
+        borrowTab.classList.toggle('active', borrowState.type === 'borrow');
+        repayTab.classList.toggle('active', borrowState.type === 'repay');
+    }
+
+    updateElementText('borrowCapacityDisplay', Utils.formatCurrency(AppState.protocol.accountSnapshot.borrowCapacityUsd));
+
+    if (!asset) {
+        updateElementText('currentDebt', '--');
+        updateElementText('borrowApy', '--');
+        updateElementText('healthFactorAfter', '--');
+        updateElementText('liquidityAvailable', '--');
+        updateElementText('effectiveLtvLimit', '--');
+        if (actionButton) {
+            actionButton.disabled = true;
+        }
         return;
     }
-    
-    const assetData = AppState.portfolio[asset];
-    
-    if (currentBorrowOperation.type === 'borrow') {
-        // Check borrow capacity
-        const capacity = Utils.calculateBorrowCapacity();
-        const amountUSD = amount * assetData.price;
-        
-        if (amountUSD > capacity) {
-            showResultMessage(`Exceeds borrow capacity. Available: ${Utils.formatCurrency(capacity)}`, 'error');
-            return;
-        }
-        
-        // Check LTV limit
-        const newDebt = assetData.borrowed + amount;
-        const totalCollateral = Utils.calculateTotalCollateral();
-        const newLTV = (Utils.calculateTotalDebt() + amountUSD) / totalCollateral;
-        
-        if (newLTV > AppState.protocolParams.maxLTV) {
-            showResultMessage(`Exceeds maximum LTV of ${(AppState.protocolParams.maxLTV * 100).toFixed(0)}%`, 'error');
-            return;
-        }
-        
-        // Execute borrow (mock)
-        assetData.borrowed += amount;
-        
-        showResultMessage(`✅ Successfully borrowed ${Utils.formatToken(amount, asset)}`, 'success');
-        
-    } else {
-        // Repay
-        if (amount > assetData.borrowed) {
-            showResultMessage('Amount exceeds current debt', 'error');
-            return;
-        }
-        
-        // Execute repay (mock)
-        assetData.borrowed -= amount;
-        
-        showResultMessage(`✅ Successfully repaid ${Utils.formatToken(amount, asset)}`, 'success');
+
+    if (actionButton) {
+        actionButton.disabled = !AppState.walletConnected || !Protocol.isDeploymentConfigured() || !Protocol.isExpectedChainMatched();
+        actionButton.textContent = borrowState.type === 'borrow' ? '🏦 Borrow' : '💵 Repay';
     }
-    
-    // Clear input
-    amountInput.value = '';
-    
-    // Update displays
-    updateBorrowCapacityDisplay();
-    updateCurrentDebtDisplay();
-    updateTransactionDetails();
+
+    updateElementText('currentDebt', Utils.formatToken(asset.borrowed, asset.symbol));
+    updateElementText('borrowApy', Utils.formatPercent(asset.borrowApy));
+    updateElementText('healthFactorAfter', Utils.formatHealthFactor(hfAfter));
+    updateElementText('liquidityAvailable', Utils.formatToken(asset.availableLiquidity, asset.symbol));
+    updateElementText('effectiveLtvLimit', Utils.formatPercent((asset.ltvBps || 0) / 100));
+
+    const healthFactorAfter = document.getElementById('healthFactorAfter');
+    const warningRow = document.getElementById('liquidationWarningRow');
+
+    if (healthFactorAfter) {
+        healthFactorAfter.style.color = hfAfter !== null && hfAfter < 1 ? 'var(--danger-color)' : 'var(--text-primary)';
+    }
+
+    if (warningRow) {
+        warningRow.style.display = hfAfter !== null && hfAfter < 1.2 ? 'flex' : 'none';
+    }
 }
 
-// Export functions for global access
+function initAdvancedOperations() {
+    const liquidationDebtSelect = document.getElementById('liquidationDebtAsset');
+    const liquidationCollateralSelect = document.getElementById('liquidationCollateralAsset');
+    const flashLoanAssetSelect = document.getElementById('flashLoanAsset');
+    const updateMarketAssetSelect = document.getElementById('updateMarketAssetSelect');
+    const updateMarketAssetInput = document.getElementById('updateMarketAsset');
+    const claimRewardsBtn = document.getElementById('advancedClaimRewardsBtn');
+    const previewLiquidationBtn = document.getElementById('previewLiquidationBtn');
+    const executeLiquidationBtn = document.getElementById('executeLiquidationBtn');
+    const flashLoanBtn = document.getElementById('flashLoanBtn');
+    const setRewardTokenBtn = document.getElementById('setRewardTokenBtn');
+    const listMarketBtn = document.getElementById('listMarketBtn');
+    const updateMarketBtn = document.getElementById('updateMarketBtn');
+
+    populateAssetSelect(liquidationDebtSelect);
+    populateAssetSelect(liquidationCollateralSelect);
+    populateAssetSelect(flashLoanAssetSelect);
+    populateAssetSelect(updateMarketAssetSelect);
+    if (updateMarketAssetInput && updateMarketAssetSelect?.value) {
+        updateMarketAssetInput.value = updateMarketAssetSelect.value;
+    }
+
+    renderAdvancedOperations();
+    document.addEventListener('protocol:updated', renderAdvancedOperations);
+
+    updateMarketAssetSelect?.addEventListener('change', () => {
+        if (updateMarketAssetInput) {
+            updateMarketAssetInput.value = updateMarketAssetSelect.value;
+        }
+
+        syncUpdateMarketFormFromSelection();
+    });
+
+    claimRewardsBtn?.addEventListener('click', async () => {
+        await withButtonState(claimRewardsBtn, '⏳ 领取中...', async () => {
+            await Protocol.claimRewards();
+            showResultMessage('奖励领取成功', 'success', 'advancedRewardsMessage');
+        }, 'advancedRewardsMessage');
+    });
+
+    previewLiquidationBtn?.addEventListener('click', async () => {
+        await withButtonState(previewLiquidationBtn, '⏳ 预览中...', async () => {
+            const preview = await Protocol.previewLiquidation({
+                borrower: document.getElementById('liquidationBorrower')?.value,
+                debtAsset: liquidationDebtSelect?.value,
+                collateralAsset: liquidationCollateralSelect?.value,
+                amount: document.getElementById('liquidationAmount')?.value
+            });
+
+            updateElementText('previewRepayAmount', Utils.formatToken(preview.actualRepayAmount, preview.debtAsset.symbol));
+            updateElementText('previewCollateralToSeize', Utils.formatToken(preview.collateralToSeize, preview.collateralAsset.symbol));
+            updateElementText('previewHealthFactor', Utils.formatHealthFactor(preview.healthFactor));
+            showResultMessage('清算预览已更新', 'success', 'advancedLiquidationMessage');
+        }, 'advancedLiquidationMessage');
+    });
+
+    executeLiquidationBtn?.addEventListener('click', async () => {
+        await withButtonState(executeLiquidationBtn, '⏳ 清算中...', async () => {
+            const result = await Protocol.liquidate({
+                borrower: document.getElementById('liquidationBorrower')?.value,
+                debtAsset: liquidationDebtSelect?.value,
+                collateralAsset: liquidationCollateralSelect?.value,
+                amount: document.getElementById('liquidationAmount')?.value
+            });
+
+            showResultMessage(result.approvalHash ? '授权并完成清算' : '清算执行成功', 'success', 'advancedLiquidationMessage');
+        }, 'advancedLiquidationMessage');
+    });
+
+    flashLoanBtn?.addEventListener('click', async () => {
+        await withButtonState(flashLoanBtn, '⏳ 执行中...', async () => {
+            await Protocol.flashLoan({
+                receiverAddress: document.getElementById('flashLoanReceiver')?.value,
+                asset: flashLoanAssetSelect?.value,
+                amount: document.getElementById('flashLoanAmount')?.value,
+                paramsHex: document.getElementById('flashLoanParams')?.value
+            });
+
+            showResultMessage('Flash loan 调用已提交', 'success', 'advancedFlashLoanMessage');
+        }, 'advancedFlashLoanMessage');
+    });
+
+    setRewardTokenBtn?.addEventListener('click', async () => {
+        await withButtonState(setRewardTokenBtn, '⏳ 设置中...', async () => {
+            await Protocol.setRewardToken(document.getElementById('rewardTokenAddressInput')?.value);
+            showResultMessage('奖励代币地址已更新', 'success', 'advancedAdminMessage');
+        }, 'advancedAdminMessage');
+    });
+
+    listMarketBtn?.addEventListener('click', async () => {
+        await withButtonState(listMarketBtn, '⏳ 上线中...', async () => {
+            await Protocol.listMarket(readMarketForm('list'));
+            showResultMessage('新市场已上线', 'success', 'advancedAdminMessage');
+        }, 'advancedAdminMessage');
+    });
+
+    updateMarketBtn?.addEventListener('click', async () => {
+        await withButtonState(updateMarketBtn, '⏳ 更新中...', async () => {
+            await Protocol.updateMarket(readMarketForm('update'));
+            showResultMessage('市场参数已更新', 'success', 'advancedAdminMessage');
+        }, 'advancedAdminMessage');
+    });
+}
+
+function renderAdvancedOperations() {
+    populateAssetSelect(document.getElementById('liquidationDebtAsset'));
+    populateAssetSelect(document.getElementById('liquidationCollateralAsset'));
+    populateAssetSelect(document.getElementById('flashLoanAsset'));
+    populateAssetSelect(document.getElementById('updateMarketAssetSelect'));
+
+    const updateMarketAssetSelect = document.getElementById('updateMarketAssetSelect');
+    const updateMarketAssetInput = document.getElementById('updateMarketAsset');
+
+    if (updateMarketAssetInput && updateMarketAssetSelect?.value) {
+        updateMarketAssetInput.value = updateMarketAssetSelect.value;
+    }
+
+    syncUpdateMarketFormFromSelection();
+
+    updateElementText('advancedPoolAddress', AppState.deployment.poolAddress || '未配置');
+    updateElementText('advancedOwnerAddress', AppState.protocol.owner || '--');
+    updateElementText('advancedRewardTokenAddress', AppState.protocol.rewardTokenMeta ? AppState.protocol.rewardTokenMeta.address : '未设置');
+    updateElementText('advancedAccruedRewards', Utils.formatToken(AppState.protocol.accruedRewards, AppState.protocol.rewardTokenMeta?.symbol || 'RWD', 4));
+    updateElementText('advancedRewardBalance', Utils.formatToken(AppState.protocol.rewardBalance, AppState.protocol.rewardTokenMeta?.symbol || 'RWD', 4));
+    updateElementText('advancedNetwork', AppState.chainLabel);
+    updateElementText('advancedSyncTime', AppState.protocol.lastSyncedAt ? new Date(AppState.protocol.lastSyncedAt).toLocaleString() : '未同步');
+
+    const adminNotice = document.getElementById('adminAccessNotice');
+
+    if (adminNotice) {
+        adminNotice.textContent = AppState.protocol.isOwner
+            ? '当前钱包是 owner，可执行管理员接口。'
+            : '当前钱包不是 owner，管理员按钮会被禁用。';
+        adminNotice.className = `status-banner ${AppState.protocol.isOwner ? 'status-info' : 'status-warning'}`;
+        adminNotice.style.display = 'block';
+    }
+
+    ['setRewardTokenBtn', 'listMarketBtn', 'updateMarketBtn'].forEach((id) => {
+        const button = document.getElementById(id);
+
+        if (button) {
+            button.disabled = !AppState.protocol.isOwner || !AppState.walletConnected || !Protocol.isExpectedChainMatched();
+        }
+    });
+
+    ['advancedClaimRewardsBtn', 'executeLiquidationBtn', 'flashLoanBtn'].forEach((id) => {
+        const button = document.getElementById(id);
+
+        if (button) {
+            button.disabled = !AppState.walletConnected || !Protocol.isDeploymentConfigured() || !Protocol.isExpectedChainMatched();
+        }
+    });
+
+    const previewButton = document.getElementById('previewLiquidationBtn');
+
+    if (previewButton) {
+        previewButton.disabled = !Protocol.isDeploymentConfigured();
+    }
+}
+
+function syncUpdateMarketFormFromSelection() {
+    const selectedAsset = Utils.resolveAsset(document.getElementById('updateMarketAssetSelect')?.value);
+
+    if (!selectedAsset) {
+        return;
+    }
+
+    const fields = {
+        updateMarketAsset: selectedAsset.address,
+        updateMarketPriceFeed: selectedAsset.market.priceFeed,
+        updateMarketLtv: selectedAsset.ltvBps,
+        updateMarketThreshold: selectedAsset.liquidationThresholdBps,
+        updateMarketBaseRate: selectedAsset.market.baseRateWad,
+        updateMarketSlope: selectedAsset.market.slopeWad,
+        updateMarketKink: selectedAsset.market.kinkBps,
+        updateMarketJumpSlope: selectedAsset.market.jumpSlopeWad
+    };
+
+    Object.entries(fields).forEach(([id, value]) => {
+        const field = document.getElementById(id);
+
+        if (field) {
+            field.value = value ?? '';
+        }
+    });
+}
+
+function populateAssetSelect(selectElement) {
+    if (!selectElement) {
+        return;
+    }
+
+    const selectedValue = selectElement.value;
+    selectElement.innerHTML = AppState.protocol.assets.map((asset) => `
+        <option value="${asset.address}">${asset.name} (${asset.symbol})</option>
+    `).join('');
+
+    if (selectedValue) {
+        selectElement.value = selectedValue;
+    }
+
+    if (!selectElement.value && AppState.protocol.assets[0]) {
+        selectElement.value = AppState.protocol.assets[0].address;
+    }
+}
+
+function readMarketForm(prefix) {
+    return {
+        asset: document.getElementById(`${prefix}MarketAsset`)?.value,
+        priceFeed: document.getElementById(`${prefix}MarketPriceFeed`)?.value,
+        ltvBps: document.getElementById(`${prefix}MarketLtv`)?.value,
+        liquidationThresholdBps: document.getElementById(`${prefix}MarketThreshold`)?.value,
+        baseRateWad: document.getElementById(`${prefix}MarketBaseRate`)?.value,
+        slopeWad: document.getElementById(`${prefix}MarketSlope`)?.value,
+        kinkBps: document.getElementById(`${prefix}MarketKink`)?.value,
+        jumpSlopeWad: document.getElementById(`${prefix}MarketJumpSlope`)?.value
+    };
+}
+
+async function withButtonState(button, pendingText, action, messageTargetId) {
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = pendingText;
+
+    try {
+        await action();
+    } catch (error) {
+        showResultMessage(error.message || '操作失败', 'error', messageTargetId);
+    } finally {
+        button.disabled = false;
+        button.textContent = originalText;
+    }
+}
+
+function showResultMessage(message, type, elementId = 'resultMessage') {
+    const resultMessage = document.getElementById(elementId);
+
+    if (!resultMessage) {
+        return;
+    }
+
+    resultMessage.textContent = message;
+    resultMessage.className = `result-message result-${type}`;
+    resultMessage.style.display = 'block';
+}
+
+function hideResultMessage(elementId = 'resultMessage') {
+    const resultMessage = document.getElementById(elementId);
+
+    if (resultMessage) {
+        resultMessage.style.display = 'none';
+    }
+}
+
 window.initDepositWithdraw = initDepositWithdraw;
 window.initBorrowRepay = initBorrowRepay;
+window.initAdvancedOperations = initAdvancedOperations;

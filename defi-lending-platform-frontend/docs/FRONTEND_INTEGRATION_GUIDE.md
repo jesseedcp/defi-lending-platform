@@ -27,12 +27,30 @@
 
 ## 3. 运行前配置
 
-前端首页新增了部署配置区，至少需要填写：
+当前联调目标网络已经固定为 **Sepolia Testnet**：
 
-- `LendingPool Address`
-- `Expected Chain ID`
+- Network Name: `Sepolia Testnet`
+- Chain ID: `11155111`
+- RPC URL: `https://eth-sepolia.g.alchemy.com/v2/2GYv4ydbfSpLHXMdD0XLa`
+- Explorer: `https://sepolia.etherscan.io`
+
+前端首页已内置默认部署配置：
+
+- `LendingPool Address`: `0x4c5C2d3888171b879BC8D8733bFc0975982B47Ac`
+- `Expected Chain ID`: `11155111`
 
 前端会把配置保存在 `localStorage`，后续页面直接复用。
+
+另外，首页支持一键切换到 Sepolia 网络。
+
+## 3.1 已知真实合约地址
+
+| 合约 | 地址 |
+|------|------|
+| LendingPool | `0x4c5C2d3888171b879BC8D8733bFc0975982B47Ac` |
+| Mock USDC | `0x36fDF6b89ed07B6D8457739b27F57E41025A12e6` |
+| Mock WETH | `0x8965Af6756303c5A9312479f3797687a9B70c84e` |
+| GOV Reward Token | `0xda58c1c86855c63408517cE32008DEE67Cd665dc` |
 
 ## 4. 认证与会话
 
@@ -196,10 +214,10 @@ AppState.protocol = {
 
 ### 9.1 推荐流程
 
-1. 启动本地链或测试网节点
-2. 部署 `LendingPool`、MockERC20、MockV3Aggregator
-3. 将部署后的 `LendingPool Address` 和 `Chain ID` 填到首页
-4. 用 MetaMask 切换到相同网络
+1. 在 MetaMask 中切换到 Sepolia
+2. 首页确认 `LendingPool Address` 为 `0x4c5C2d3888171b879BC8D8733bFc0975982B47Ac`
+3. 首页确认 `Chain ID` 为 `11155111`
+4. 用持有测试资产的钱包连接页面
 5. 依次验证 Dashboard、Supply、Borrow、Repay、Claim Rewards、Liquidation、Admin
 
 ### 9.2 关键注意事项
@@ -209,8 +227,16 @@ AppState.protocol = {
 - 当前合约没有“关闭抵押”的接口，所有 supply 默认参与抵押
 - 前端应以链上返回的资产列表和市场参数为准，不再写死 ETH / USDC
 
-## 10. 已完成的验证
+## 10. ABI 说明
+
+- 当前前端运行时直接使用 [protocol.js](file:///Users/bowie/Documents/GitHub/defi-lending-platform/defi-lending-platform-frontend/js/protocol.js#L1-L37) 中内置的 human-readable ABI。
+- 我检查了当前仓库快照，**没有发现** `out/LendingPool.sol/LendingPool.json` 和 `out/MockERC20.sol/MockERC20.json` 编译产物。
+- 如果前端同学需要标准 Foundry artifact，需要在安装 `forge` 后于仓库根目录执行 `forge build`，届时会生成 `out/.../*.json`。
+- 在当前仓库状态下，前端已不依赖 `out` 目录即可运行和联调。
+
+## 11. 已完成的验证
 
 - 通过编辑器诊断检查新增前端文件没有显式语法错误
 - 前端页面结构已更新为链上驱动模式
-- 后续如需做完整人工联调，需要提供真实部署地址并在钱包中切换到对应网络
+- 首页默认已写入 Sepolia 与真实合约地址
+- 后续如需做完整人工联调，需要在钱包中连接 Sepolia 并持有对应测试资产

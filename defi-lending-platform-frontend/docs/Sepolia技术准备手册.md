@@ -14,7 +14,7 @@
 8. `Admin`（可选）
 9. `Flash Loan`（可选）
 
----
+***
 
 ## 0. 准备目标
 
@@ -28,28 +28,28 @@
 - 如演示清算，演示用户已经有一个可清算仓位
 - 如演示闪电贷，接收合约已经部署并完成测试
 
----
+***
 
 ## 1. 固定信息
 
 ### 1.1 网络
 
-| 字段 | 固定值 |
-|---|---|
-| Network Name | `Sepolia Testnet` |
-| Chain ID | `11155111` |
-| 主 RPC | `https://eth-sepolia.g.alchemy.com/v2/2GYv4ydbfSpLHXMdD0XLa` |
-| 备用 RPC 1 | `https://rpc.sepolia.org` |
-| 备用 RPC 2 | `https://ethereum-sepolia-rpc.publicnode.com` |
+| 字段           | 固定值                                                          |
+| ------------ | ------------------------------------------------------------ |
+| Network Name | `Sepolia Testnet`                                            |
+| Chain ID     | `11155111`                                                   |
+| 主 RPC        | `https://eth-sepolia.g.alchemy.com/v2/2GYv4ydbfSpLHXMdD0XLa` |
+| 备用 RPC 1     | `https://rpc.sepolia.org`                                    |
+| 备用 RPC 2     | `https://ethereum-sepolia-rpc.publicnode.com`                |
 
 ### 1.2 合约地址
 
-| 合约 | 地址 |
-|---|---|
+| 合约          | 地址                                           |
+| ----------- | -------------------------------------------- |
 | LendingPool | `0x4c5C2d3888171b879BC8D8733bFc0975982B47Ac` |
-| Mock USDC | `0x36fDF6b89ed07B6D8457739b27F57E41025A12e6` |
-| Mock WETH | `0x8965Af6756303c5A9312479f3797687a9B70c84e` |
-| GOV | `0xda58c1c86855c63408517cE32008DEE67Cd665dc` |
+| Mock USDC   | `0x36fDF6b89ed07B6D8457739b27F57E41025A12e6` |
+| Mock WETH   | `0x8965Af6756303c5A9312479f3797687a9B70c84e` |
+| GOV         | `0xda58c1c86855c63408517cE32008DEE67Cd665dc` |
 
 ### 1.3 合约方法依据
 
@@ -63,7 +63,7 @@
 - `previewLiquidation(address,address,address,uint256)`：`src/LendingPool.sol`
 - `updateAnswer(int256)`：`src/mocks/MockV3Aggregator.sol`
 
----
+***
 
 ## 2. 前置要求
 
@@ -84,7 +84,7 @@ cast --version
 
 如果主 RPC 访问失败，优先切换到备用 RPC，不要一直重试同一个地址。
 
----
+***
 
 ## 3. 安全要求
 
@@ -96,17 +96,17 @@ cast --version
 - 可以直接在命令里替换占位符，但不要把替换后的命令截图外传
 - 如果私钥曾经出现在截图、聊天记录或共享文档中，视为泄露，应立即弃用该钱包
 
----
+***
 
 ## 4. 建议准备的账户角色
 
 建议至少准备下面 3 个账户：
 
-| 角色 | 用途 |
-|---|---|
-| `Owner` | 提供池子流动性、准备奖励、必要时调整预言机价格、演示管理员功能 |
-| `Demo User` | 前端主演示账户，执行 `Supply` / `Borrow` / `Repay` / `Withdraw` / `Claim Rewards` |
-| `Liquidator` | 演示清算操作 |
+| 角色           | 用途                                                                      |
+| ------------ | ----------------------------------------------------------------------- |
+| `Owner`      | 提供池子流动性、准备奖励、必要时调整预言机价格、演示管理员功能                                         |
+| `Demo User`  | 前端主演示账户，执行 `Supply` / `Borrow` / `Repay` / `Withdraw` / `Claim Rewards` |
+| `Liquidator` | 演示清算操作                                                                  |
 
 推荐要求：
 
@@ -114,7 +114,7 @@ cast --version
 - 如要讲 `Admin`，`Owner` 也已提前导入 MetaMask
 - 3 个地址已提前写入演示交接卡
 
----
+***
 
 ## 5. 命令中的固定值与占位符
 
@@ -143,7 +143,7 @@ cast --version
 - 如果 `https://rpc.sepolia.org` 不通，可以把命令中的 `--rpc-url` 改成备用 RPC
 - 所有命令都可以直接复制后替换尖括号内容再执行
 
----
+***
 
 ## 6. 数量约定
 
@@ -151,12 +151,12 @@ cast --version
 
 常用数量换算：
 
-| 显示数量 | 链上数量 |
-|---|---|
-| `1` | `1000000000000000000` |
-| `10` | `10000000000000000000` |
-| `100` | `100000000000000000000` |
-| `1000` | `1000000000000000000000` |
+| 显示数量    | 链上数量                      |
+| ------- | ------------------------- |
+| `1`     | `1000000000000000000`     |
+| `10`    | `10000000000000000000`    |
+| `100`   | `100000000000000000000`   |
+| `1000`  | `1000000000000000000000`  |
 | `10000` | `10000000000000000000000` |
 | `50000` | `50000000000000000000000` |
 
@@ -167,7 +167,7 @@ cast --version
 - 给 `Liquidator`：`10000 USDC`
 - 给 `Pool`：`100000 GOV`
 
----
+***
 
 ## 7. 第一步：给各账户 mint 演示代币
 
@@ -175,7 +175,7 @@ cast --version
 
 ```bash
 cast send 0x8965Af6756303c5A9312479f3797687a9B70c84e "mint(address,uint256)" <DEMO_USER_ADDRESS> 10000000000000000000 \
-  --rpc-url https://rpc.sepolia.org \
+  --rpc-url https://ethereum-sepolia-rpc.publicnode.com \
   --private-key <OWNER_PRIVATE_KEY>
 ```
 
@@ -188,7 +188,7 @@ cast send 0x8965Af6756303c5A9312479f3797687a9B70c84e "mint(address,uint256)" <DE
 
 ```bash
 cast send 0x36fDF6b89ed07B6D8457739b27F57E41025A12e6 "mint(address,uint256)" <OWNER_ADDRESS> 50000000000000000000000 \
-  --rpc-url https://rpc.sepolia.org \
+  --rpc-url https://ethereum-sepolia-rpc.publicnode.com \
   --private-key <OWNER_PRIVATE_KEY>
 ```
 
@@ -201,7 +201,7 @@ cast send 0x36fDF6b89ed07B6D8457739b27F57E41025A12e6 "mint(address,uint256)" <OW
 
 ```bash
 cast send 0x36fDF6b89ed07B6D8457739b27F57E41025A12e6 "mint(address,uint256)" <LIQUIDATOR_ADDRESS> 10000000000000000000000 \
-  --rpc-url https://rpc.sepolia.org \
+  --rpc-url https://ethereum-sepolia-rpc.publicnode.com \
   --private-key <OWNER_PRIVATE_KEY>
 ```
 
@@ -214,7 +214,7 @@ cast send 0x36fDF6b89ed07B6D8457739b27F57E41025A12e6 "mint(address,uint256)" <LI
 
 ```bash
 cast send 0xda58c1c86855c63408517cE32008DEE67Cd665dc "mint(address,uint256)" 0x4c5C2d3888171b879BC8D8733bFc0975982B47Ac 100000000000000000000000 \
-  --rpc-url https://rpc.sepolia.org \
+  --rpc-url https://eth-sepolia.g.alchemy.com/v2/2GYv4ydbfSpLHXMdD0XLa \
   --private-key <OWNER_PRIVATE_KEY>
 ```
 
@@ -223,7 +223,7 @@ cast send 0xda58c1c86855c63408517cE32008DEE67Cd665dc "mint(address,uint256)" 0x4
 - 给池子发放 `100000 GOV`
 - 用于 `Claim Rewards`
 
----
+***
 
 ## 8. 第二步：给池子注入 USDC 流动性
 
@@ -233,7 +233,7 @@ cast send 0xda58c1c86855c63408517cE32008DEE67Cd665dc "mint(address,uint256)" 0x4
 
 ```bash
 cast send 0x36fDF6b89ed07B6D8457739b27F57E41025A12e6 "approve(address,uint256)" 0x4c5C2d3888171b879BC8D8733bFc0975982B47Ac 50000000000000000000000 \
-  --rpc-url https://rpc.sepolia.org \
+  --rpc-url https://ethereum-sepolia-rpc.publicnode.com \
   --private-key <OWNER_PRIVATE_KEY>
 ```
 
@@ -250,7 +250,7 @@ cast send 0x4c5C2d3888171b879BC8D8733bFc0975982B47Ac "supply(address,uint256)" 0
 - 池子获得 `50000 USDC` 流动性
 - 前端 `Borrow` 页面可以正常借出 `USDC`
 
----
+***
 
 ## 9. 第三步：给演示用户准备一个正常仓位
 
@@ -260,7 +260,7 @@ cast send 0x4c5C2d3888171b879BC8D8733bFc0975982B47Ac "supply(address,uint256)" 0
 
 ```bash
 cast send 0x8965Af6756303c5A9312479f3797687a9B70c84e "approve(address,uint256)" 0x4c5C2d3888171b879BC8D8733bFc0975982B47Ac 10000000000000000000 \
-  --rpc-url https://rpc.sepolia.org \
+  --rpc-url https://eth-sepolia.g.alchemy.com/v2/2GYv4ydbfSpLHXMdD0XLa \
   --private-key <DEMO_USER_PRIVATE_KEY>
 ```
 
@@ -292,11 +292,11 @@ cast send 0x4c5C2d3888171b879BC8D8733bFc0975982B47Ac "borrow(address,uint256)" 0
 - 如果你希望仓位更保守，可以把借款额改小，例如 `5000 USDC`
 - 如果你希望后续更容易进入清算，可以保留 `10000 USDC`
 
----
+***
 
 ## 10. 第四步：为还款演示做准备
 
-如果演示用户借过 `USDC`，理论上他已经有还款资金。  
+如果演示用户借过 `USDC`，理论上他已经有还款资金。\
 但为避免演示前误转走，建议额外再给他补一点 `USDC`。
 
 ```bash
@@ -310,7 +310,7 @@ cast send 0x36fDF6b89ed07B6D8457739b27F57E41025A12e6 "mint(address,uint256)" <DE
 - 给 `Demo User` 额外补 `1000 USDC`
 - 避免现场 `Repay` 时因为余额不足失败
 
----
+***
 
 ## 11. 第五步：准备清算演示所需的危险仓位
 
@@ -367,7 +367,7 @@ cast call 0x4c5C2d3888171b879BC8D8733bFc0975982B47Ac "previewLiquidation(address
 - 再把 `WETH` 价格继续下调
 - 或者先让 `Demo User` 再借一点 `USDC`
 
----
+***
 
 ## 12. 第六步：准备清算人账户
 
@@ -383,7 +383,7 @@ cast send 0x36fDF6b89ed07B6D8457739b27F57E41025A12e6 "approve(address,uint256)" 
 
 - 清算人后续可以在前端执行 `Execute Liquidation`
 
----
+***
 
 ## 13. 第七步：验证奖励领取是否可演示
 
@@ -420,7 +420,7 @@ cast send 0x4c5C2d3888171b879BC8D8733bFc0975982B47Ac "repay(address,uint256)" 0x
 
 - 帮助前端更快显示奖励累计变化
 
----
+***
 
 ## 14. 第八步：准备 Admin 演示
 
@@ -441,7 +441,7 @@ cast call 0x4c5C2d3888171b879BC8D8733bFc0975982B47Ac "owner()(address)" --rpc-ur
 - 正式演示时只展示权限识别和参数读取
 - 如非必要，不要现场提交 `updateMarket`
 
----
+***
 
 ## 15. 第九步：Flash Loan 准备说明
 
@@ -458,7 +458,7 @@ cast call 0x4c5C2d3888171b879BC8D8733bFc0975982B47Ac "owner()(address)" --rpc-ur
 - 演示手册里把 `Flash Loan` 保留为可选项
 - 现场只讲原理，不点执行
 
----
+***
 
 ## 16. 最终校验命令
 
@@ -505,7 +505,7 @@ cast call 0x4c5C2d3888171b879BC8D8733bFc0975982B47Ac "previewLiquidation(address
 - `getAccountSnapshot()` 返回的抵押和债务不是全 `0`
 - 如要讲清算，`previewLiquidation()` 返回值不应全 `0`
 
----
+***
 
 ## 17. 常见问题与处理
 
@@ -568,7 +568,7 @@ cast call 0x4c5C2d3888171b879BC8D8733bFc0975982B47Ac "previewLiquidation(address
 - 进一步下调 `WETH` 价格
 - 或先增加借款额
 
----
+***
 
 ## 18. 最小可用准备方案
 
@@ -594,7 +594,7 @@ cast call 0x4c5C2d3888171b879BC8D8733bFc0975982B47Ac "previewLiquidation(address
 - `Claim Rewards`
 - `Liquidation Preview / Execute`
 
----
+***
 
 ## 19. 正式开始前最后确认
 
